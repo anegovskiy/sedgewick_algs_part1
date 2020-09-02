@@ -20,7 +20,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     // construct an empty deque
     public Deque() {
-        // empty 
+        // empty
     }
 
     // is the deque empty?
@@ -116,7 +116,7 @@ public class Deque<Item> implements Iterable<Item> {
         deque.addFirst(131);
         deque.addLast(149);
 
-        for (Integer item: deque) {
+        for (int item: deque) {
             System.out.println(item);
         }
     }
