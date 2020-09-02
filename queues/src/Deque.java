@@ -85,7 +85,15 @@ public class Deque<Item> implements Iterable<Item> {
         checkIfDequeNotEmpty();
 
         Node oldFirst = first;
-        first = oldFirst.next;
+        Node next = oldFirst.next;
+        first = next;
+        if (next != null) {
+            next.previous = null;
+        }
+
+        if (oldFirst.equals(last)) {
+            last = null;
+        }
 
         return oldFirst.item;
     }
@@ -95,7 +103,15 @@ public class Deque<Item> implements Iterable<Item> {
         checkIfDequeNotEmpty();
 
         Node oldLast = last;
-        last = oldLast.previous;
+        Node previous = oldLast.previous;
+        last = previous;
+        if (previous != null) {
+            previous.next = null;
+        }
+
+        if (oldLast.equals(first)) {
+            first = null;
+        }
 
         return oldLast.item;
     }
@@ -108,13 +124,12 @@ public class Deque<Item> implements Iterable<Item> {
     // unit testing (required)
     public static void main(String[] args) {
         Deque<Integer> deque = new Deque<>();
-        deque.addFirst(123);
-        deque.addFirst(125);
-        deque.addFirst(127);
-        deque.addLast(145);
-        deque.addFirst(129);
-        deque.addFirst(131);
-        deque.addLast(149);
+        deque.addFirst(1);
+        deque.removeFirst();
+        deque.addFirst(3);
+        deque.addFirst(4);
+        deque.addLast(5);
+        deque.removeLast();
 
         for (int item: deque) {
             System.out.println(item);

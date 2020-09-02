@@ -4,7 +4,6 @@
  *  Description:
  **************************************************************************** */
 
-import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
 import java.util.Iterator;
@@ -70,45 +69,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // unit testing (required)
     public static void main(String[] args) {
-        RandomizedQueue<Integer> queue = new RandomizedQueue();
+        RandomizedQueue<Integer> queue = new RandomizedQueue<Integer>();
+        // queue.size();
         queue.enqueue(123);
-        queue.enqueue(125);
-        queue.enqueue(127);
-        queue.enqueue(129);
-        queue.enqueue(131);
-        queue.enqueue(133);
-        queue.enqueue(135);
-        queue.enqueue(137);
-        queue.enqueue(139);
-
-        for (int item: queue) {
-            System.out.println(item);
-        }
-
         queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-        queue.dequeue();
-
-        System.out.println("=========");
-
-        for (int item: queue) {
-            System.out.println(item);
-        }
-
-        int n = 5;
-        RandomizedQueue<Integer> queueR = new RandomizedQueue<Integer>();
-        for (int i = 0; i < n; i++)
-            queueR.enqueue(i);
-        for (int a : queueR) {
-            for (int b : queueR)
-                StdOut.print(a + "-" + b + " ");
-            StdOut.println();
-        }
     }
 
     // MARK: Validation & checks
@@ -157,7 +121,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     private void decreaseArrayCapacity() {
-        changeItemsCapacityTo(items.length / ARRAY_CAPACITY_MULTIPLIER);
+        int currentArrayCapacity = items.length;
+        if (currentArrayCapacity > 2) {
+            changeItemsCapacityTo(items.length / ARRAY_CAPACITY_MULTIPLIER);
+        }
     }
 
     private void changeItemsCapacityTo(int newCapacity) {
