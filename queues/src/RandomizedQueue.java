@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
 import java.util.Iterator;
@@ -97,6 +98,16 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         for (int item: queue) {
             System.out.println(item);
+        }
+
+        int n = 5;
+        RandomizedQueue<Integer> queueR = new RandomizedQueue<Integer>();
+        for (int i = 0; i < n; i++)
+            queueR.enqueue(i);
+        for (int a : queueR) {
+            for (int b : queueR)
+                StdOut.print(a + "-" + b + " ");
+            StdOut.println();
         }
     }
 
