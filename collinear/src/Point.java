@@ -10,6 +10,7 @@
 
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class Point implements Comparable<Point> {
@@ -60,7 +61,7 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        return 0;
+        return (double) (that.y - y) / (that.x - x);
     }
 
     /**
@@ -76,7 +77,15 @@ public class Point implements Comparable<Point> {
      *         argument point
      */
     public int compareTo(Point that) {
-        return 0;
+        if (y == that.y && x == that.x) {
+            return 0;
+        }
+
+        if (y < that.y || y == that.y && x < that.x) {
+            return -1;
+        }
+
+        return 1;
     }
 
     /**
@@ -86,7 +95,16 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        return null;
+        Comparator<Point> comparator = new Comparator<Point>() {
+            public int compare(Point o1, Point o2) {
+                double slope1 = slopeTo(o1);
+                double slope2 = slopeTo(o2);
+
+                return Double.compare(slope1, slope2);
+            }
+        };
+
+        return comparator;
     }
 
 
@@ -106,6 +124,67 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        /* YOUR CODE HERE */
+        // Testing point compare
+        testCompareTo();
+        testSlopeTo();
+        testSlopeOrder();
+    }
+
+    private static void testCompareTo() {
+        // Points are equal
+        Point first = new Point(0, 0);
+        Point second = new Point(0, 0);
+        assert first.compareTo(second) == 0;
+
+        // First is less, because of y
+        first = new Point(5, 2);
+        second = new Point(1, 5);
+        assert first.compareTo(second) < 0;
+
+        // First is less, because of x
+        first = new Point(5, 5);
+        second = new Point(11, 5);
+        assert first.compareTo(second) < 0;
+
+        // First is greater, because of y
+        first = new Point(5, 7);
+        second = new Point(1, 5);
+        assert first.compareTo(second) > 0;
+    }
+
+    private static void testSlopeTo() {
+        // Horizontal line, slope is 0
+        Point first = new Point(1, 5);
+        Point second = new Point(10, 5);
+        assert first.slopeTo(second) == 0;
+
+        // Vertical line, slope is positive
+        first = new Point(1, 2);
+        second = new Point(5, 5);
+        assert first.slopeTo(second) > 0;
+
+        // Degenerate line, slope is negative
+        first = new Point(5, 5);
+        second = new Point(11, 1);
+        assert first.slopeTo(second) < 0;
+    }
+
+    private static void testSlopeOrder() {
+        // Ascending order of point's slopes
+        Point that = new Point(0, 0);
+        Point first = new Point(3, 1);
+        Point second = new Point(1, 1);
+
+        Point[] points = {first, second};
+        Arrays.sort(points, that.slopeOrder());
+        assert points[0].equals(first);
+
+        // Descending order of point's slopes
+        first = new Point(3, 1);
+        second = new Point(15, 1);
+
+        points = new Point[] { first, second };
+        Arrays.sort(points, that.slopeOrder());
+        assert points[0].equals(second);
     }
 }
