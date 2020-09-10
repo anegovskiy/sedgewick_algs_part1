@@ -61,11 +61,11 @@ public class Point implements Comparable<Point> {
      */
     public double slopeTo(Point that) {
         if (this.compareTo(that) == 0) {
-            return 0;
+            return Double.NEGATIVE_INFINITY;
         }
 
         if (x == that.x) {
-            return y > that.y ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+            return Double.POSITIVE_INFINITY;
         }
 
         if (y == that.y) {
@@ -108,10 +108,14 @@ public class Point implements Comparable<Point> {
     public Comparator<Point> slopeOrder() {
         Comparator<Point> comparator = new Comparator<Point>() {
             public int compare(Point o1, Point o2) {
+                if (o1 == null || o2 == null) {
+                    return 0;
+                }
+
                 double slope1 = slopeTo(o1);
                 double slope2 = slopeTo(o2);
 
-                return Double.compare(slope2, slope1);
+                return Double.compare(slope1, slope2);
             }
         };
 
@@ -136,62 +140,5 @@ public class Point implements Comparable<Point> {
      */
     public static void main(String[] args) {
         // Testing point compare
-
-        // testCompareTo();
-        // testSlopeTo();
-        // testSlopeOrder();
     }
-
-
-    // private static void testCompareTo() {
-    //     // Points are equal
-    //     Point first = new Point(0, 0);
-    //     Point second = new Point(0, 0);
-    //     assert first.compareTo(second) == 0;
-    //
-    //     // First is less, because of y
-    //     first = new Point(5, 2);
-    //     second = new Point(1, 5);
-    //     assert first.compareTo(second) < 0;
-    //
-    //     // First is less, because of x
-    //     first = new Point(5, 5);
-    //     second = new Point(11, 5);
-    //     assert first.compareTo(second) < 0;
-    //
-    //     // First is greater, because of y
-    //     first = new Point(5, 7);
-    //     second = new Point(1, 5);
-    //     assert first.compareTo(second) > 0;
-    // }
-
-    // private static void testSlopeTo() {
-    //
-    //     Point first = new Point(339, 468);
-    //     Point second = new Point(230, 468);
-    //     assert first.slopeTo(second) == 0;
-    //
-    //     first = new Point(361, 454);
-    //     second = new Point(361, 163);
-    //     assert first.slopeTo(second) == Double.POSITIVE_INFINITY;
-    // }
-
-    // private static void testSlopeOrder() {
-    //     // Ascending order of point's slopes
-    //     Point that = new Point(0, 0);
-    //     Point first = new Point(3, 1);
-    //     Point second = new Point(1, 1);
-    //
-    //     Point[] points = { first, second };
-    //     Arrays.sort(points, that.slopeOrder());
-    //     assert points[0].equals(first);
-    //
-    //     // Descending order of point's slopes
-    //     first = new Point(3, 1);
-    //     second = new Point(15, 1);
-    //
-    //     points = new Point[] { first, second };
-    //     Arrays.sort(points, that.slopeOrder());
-    //     assert points[0].equals(second);
-    // }
 }

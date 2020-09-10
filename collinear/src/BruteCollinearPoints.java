@@ -12,11 +12,13 @@ import java.util.Arrays;
 
 public class BruteCollinearPoints {
     private final Point[] points;
+    private final LineSegment[] segments;
 
     public BruteCollinearPoints(Point[] points) {
         validatePoints(points);
 
-        this.points = points.clone();
+        this.points = Arrays.copyOf(points, points.length);
+        segments = findAllSegments();
     }
 
     public int numberOfSegments() {
@@ -31,7 +33,7 @@ public class BruteCollinearPoints {
     //  that has 5 or more collinear points.
 
     public LineSegment[] segments() {
-        return findAllSegments();
+        return Arrays.copyOf(segments, segments.length);
     }
 
     // Validation
@@ -62,7 +64,7 @@ public class BruteCollinearPoints {
     private LineSegment[] findAllSegments() {
         int pointsCount = points.length;
         int segmentCount = 0;
-        LineSegment[] segments = new LineSegment[pointsCount / 4];
+        LineSegment[] segmentsTemporary = new LineSegment[pointsCount];
 
         for (int i = 0; i < pointsCount; i++) {
             Point p = points[i];
@@ -97,7 +99,7 @@ public class BruteCollinearPoints {
 
                             Arrays.sort(linePoints);
                             LineSegment segment = new LineSegment(linePoints[0], linePoints[3]);
-                            segments[segmentCount++] = segment;
+                            segmentsTemporary[segmentCount++] = segment;
                         }
 
                     }
@@ -107,7 +109,7 @@ public class BruteCollinearPoints {
 
         LineSegment[] smallerArray = new LineSegment[segmentCount];
         for (int i = 0; i < segmentCount; i++) {
-            smallerArray[i] = segments[i];
+            smallerArray[i] = segmentsTemporary[i];
         }
 
         return smallerArray;
