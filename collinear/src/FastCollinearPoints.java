@@ -7,6 +7,7 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stopwatch;
 
 import java.awt.Color;
 import java.util.Arrays;
@@ -15,6 +16,9 @@ public class FastCollinearPoints {
 
     private final Point[] points;
     private final LineSegment[] segments;
+
+    private LineSegment[] temporarySegments;
+    private int temporarySegmentCount;
 
     public FastCollinearPoints(Point[] points) {
         validatePoints(points);
@@ -34,51 +38,67 @@ public class FastCollinearPoints {
 
     private LineSegment[] findAllSegments() {
         int pointsCount = points.length;
-        int segmentCount = 0;
-        LineSegment[] segmentsTemporary = new LineSegment[pointsCount];
+        temporarySegmentCount = 0;
+        temporarySegments = new LineSegment[pointsCount * pointsCount + 1];
 
         for (int i = 0; i < pointsCount; i++) {
-            Point[] equalSlopes = new Point[pointsCount];
-
+            Point[] equalSlopes = new Point[pointsCount + 1];
             Point p = points[i];
             equalSlopes[0] = p;
 
-            for (int j = i + 1; j < pointsCount; j++) {
-                Point q0 = points[j];
-                double slopeToQ0 = p.slopeTo(q0);
+            Point[] sortedBySlope = Arrays.copyOfRange(points, i, pointsCount);
+            int sortedBySlopeCount = sortedBySlope.length;
+            Arrays.sort(sortedBySlope, p.slopeOrder());
 
-                equalSlopes[1] = q0;
-                int slopeCount = 2;
+            Double previousSlope = null;
+            int slopeCount = 1;
 
-                for (int k = j + 1; k < points.length; k++) {
-                    Point q = points[k];
-                    double slopeToQ = p.slopeTo(q);
+            for (int j = 0; j < sortedBySlopeCount; j++) {
+                Point q = sortedBySlope[j];
+                double slopeToQ = p.slopeTo(q);
 
-                    if (slopeToQ0 == slopeToQ) {
-                        equalSlopes[slopeCount++] = q;
-                    }
+                if (previousSlope == null) {
+                    previousSlope = slopeToQ;
+                    equalSlopes[slopeCount++] = q;
                 }
+                else if (slopeToQ == previousSlope) {
+                    equalSlopes[slopeCount++] = q;
+                }
+                else {
+                    saveSegments(slopeCount, equalSlopes);
 
-                if (slopeCount > 3) {
-                    Point[] pointsForSegment = new Point[slopeCount];
-                    for (int n = 0; n < slopeCount; n++) {
-                        pointsForSegment[n] = equalSlopes[n];
-                    }
-
-                    Arrays.sort(pointsForSegment);
-                    LineSegment segment = new LineSegment(pointsForSegment[0],
-                                                          pointsForSegment[slopeCount - 1]);
-                    segmentsTemporary[segmentCount++] = segment;
+                    // Cleanup for next slope
+                    slopeCount = 2;
+                    equalSlopes = new Point[pointsCount];
+                    equalSlopes[0] = p;
+                    equalSlopes[1] = q;
+                    previousSlope = slopeToQ;
                 }
             }
+
+            saveSegments(slopeCount, equalSlopes);
         }
 
-        LineSegment[] smallerArray = new LineSegment[segmentCount];
-        for (int j = 0; j < segmentCount; j++) {
-            smallerArray[j] = segmentsTemporary[j];
+        LineSegment[] smallerArray = new LineSegment[temporarySegmentCount];
+        for (int j = 0; j < temporarySegmentCount; j++) {
+            smallerArray[j] = temporarySegments[j];
         }
 
         return smallerArray;
+    }
+
+    private void saveSegments(int slopeCount, Point[] equalSlopes) {
+        if (slopeCount > 3) {
+            Point[] pointsForSegment = new Point[slopeCount];
+            for (int n = 0; n < slopeCount; n++) {
+                pointsForSegment[n] = equalSlopes[n];
+            }
+
+            Arrays.sort(pointsForSegment);
+            LineSegment segment = new LineSegment(pointsForSegment[0],
+                                                  pointsForSegment[slopeCount - 1]);
+            temporarySegments[temporarySegmentCount++] = segment;
+        }
     }
 
     // Validation
@@ -128,7 +148,10 @@ public class FastCollinearPoints {
         // print and draw the line segments
         StdDraw.setPenRadius(0.001);
         StdDraw.setPenColor(Color.RED);
+
+        Stopwatch stopwatch = new Stopwatch();
         FastCollinearPoints collinear = new FastCollinearPoints(points);
+        System.out.println(stopwatch.elapsedTime());
         for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();

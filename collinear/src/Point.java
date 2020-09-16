@@ -109,7 +109,7 @@ public class Point implements Comparable<Point> {
         Comparator<Point> comparator = new Comparator<Point>() {
             public int compare(Point o1, Point o2) {
                 if (o1 == null || o2 == null) {
-                    return 0;
+                    throw new NullPointerException("point cant be null here");
                 }
 
                 double slope1 = slopeTo(o1);
