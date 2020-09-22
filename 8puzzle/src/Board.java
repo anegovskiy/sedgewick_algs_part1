@@ -9,30 +9,51 @@ import edu.princeton.cs.algs4.Stack;
 import java.util.Arrays;
 
 public class Board {
-    private final int[][] tiles;
-    private int emptySpaceRow = -1;
-    private int emptySpaceCol = -1;
+    private final char[] tiles;
+    private int emptySpaceCoordinate = -1;
+
+    private int hamming = 0;
+    private int manhattan = 0;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         validateTiles(tiles);
         int n = tiles.length;
-        this.tiles = new int[n][n];
+        this.tiles = new char[n * n];
         for (int i = 0; i < n; i++) {
-            this.tiles[i] = Arrays.copyOf(tiles[i], tiles.length);
+            for (int j = 0; j < n; j++) {
+                int index = i * n + j;
+                this.tiles[index] = (char) tiles[i][j];
+            }
         }
+
+        hamming = calculateHammingNumber();
+        manhattan = calculateManhattanNumber();
+    }
+
+    private Board(char[] tiles) {
+        validateTiles(tiles);
+        this.tiles = new char[tiles.length];
+        for (int i = 0; i < tiles.length; i++) {
+            this.tiles[i] = tiles[i];
+        }
+
+        hamming = calculateHammingNumber();
+        manhattan = calculateManhattanNumber();
+        findEmptySpaceCoordinates();
     }
 
     // string representation of this board
     public String toString() {
         String stringRep = String.format("%d", dimension());
 
-        for (int[] row : tiles) {
-            stringRep = stringRep.concat("\n");
-            for (int tile : row) {
-                stringRep = stringRep.concat(String.format(" %d", tile));
+        for (int i = 0; i < dimension() * dimension(); i++) {
+            if (i % dimension() == 0) {
+                stringRep = stringRep.concat("\n");
             }
+
+            stringRep = stringRep.concat(String.format(" %d", (int) tiles[i]));
         }
 
         return stringRep;
@@ -40,33 +61,38 @@ public class Board {
 
     // board dimension n
     public int dimension() {
-        return tiles.length;
+        return (int) Math.sqrt((double) tiles.length);
     }
 
     // number of tiles out of place
     public int hamming() {
+        return hamming;
+    }
+
+    private int calculateHammingNumber() {
         int hammingNumber = 0;
         int dimension = dimension();
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
-                int tile = tiles[i][j];
-                if (tile == 0) continue;
-                if (!isTileAtCorrectCoordinates(tile, i, j)) {
-                    hammingNumber += 1;
-                }
+        for (int i = 0; i < dimension * dimension; i++) {
+            char tile = tiles[i];
+            if ((int) tile == 0) continue;
+            if (!isTileAtCorrectCoordinates(tile, i)) {
+                hammingNumber += 1;
             }
         }
-
         return hammingNumber;
     }
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
+        return manhattan;
+    }
+
+    private int calculateManhattanNumber() {
         int manhattanDistance = 0;
         int dimension = dimension();
         for (int row = 0; row < dimension; row++) {
             for (int col = 0; col < dimension; col++) {
-                int tile = tiles[row][col];
+                char tile = tiles[row * dimension + col];
                 manhattanDistance += manhattanDistanceFor(tile, row, col);
             }
         }
@@ -76,7 +102,7 @@ public class Board {
 
     // is this board the goal board?
     public boolean isGoal() {
-        return true;
+        return hamming() == 0;
     }
 
     // does this board equal y?
@@ -91,7 +117,7 @@ public class Board {
             return false;
         }
 
-        return Arrays.deepEquals(tiles, ((Board) y).tiles);
+        return Arrays.equals(tiles, ((Board) y).tiles);
     }
 
     private enum Neighbor {
@@ -104,7 +130,7 @@ public class Board {
         Stack<Board> neighbors = new Stack<>();
 
         for (Neighbor neighbor : Neighbor.values()) {
-            int[][] neighborTiles = createTilesFor(neighbor);
+            char[] neighborTiles = createTilesFor(neighbor);
             if (neighborTiles != null) {
                 Board board = new Board(neighborTiles);
                 neighbors.push(board);
@@ -115,7 +141,27 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        return null;
+        char[] tilesCopy = Arrays.copyOf(tiles, tiles.length);
+        Board twin = new Board(tilesCopy);
+        findEmptySpaceCoordinates();
+
+        int firstCoordinate = 0;
+        while (firstCoordinate == emptySpaceCoordinate) {
+            firstCoordinate += 1;
+        }
+
+        int secondCoordinate = 0;
+        while (secondCoordinate == firstCoordinate
+                || secondCoordinate == emptySpaceCoordinate) {
+            secondCoordinate += 1;
+        }
+
+        char firstTile = twin.tiles[firstCoordinate];
+        char secondTile = twin.tiles[secondCoordinate];
+        twin.tiles[firstCoordinate] = secondTile;
+        twin.tiles[secondCoordinate] = firstTile;
+
+        return twin;
     }
 
     // unit testing (not graded)
@@ -130,32 +176,39 @@ public class Board {
         }
     }
 
+    private void validateTiles(char[] tilesToValidate) {
+        if (tilesToValidate == null || tilesToValidate.length < 1) {
+            throw new IllegalArgumentException("tiles should be present");
+        }
+    }
+
     // Coordinate calculations
-    private int correctRowFor(int tile) {
-        if (tile == 0) {
+    private int correctRowFor(char tile) {
+        if ((int) tile == 0) {
             return dimension();
         }
         return (int) Math.ceil((double) tile / dimension());
     }
 
-    private int correctColFor(int tile) {
-        if (tile == 0) {
+    private int correctColFor(char tile) {
+        if ((int) tile == 0) {
             return dimension();
         }
 
-        int mod = tile % dimension();
+        int mod = (int) tile % dimension();
         return mod == 0 ? dimension() : mod;
     }
 
-    private boolean isTileAtCorrectCoordinates(int tile, int row, int col) {
-        int correctRow = correctRowFor(tile);
-        int correctCol = correctColFor(tile);
+    private boolean isTileAtCorrectCoordinates(char tile, int coordinate) {
+        if ((int) tile == 0) {
+            return true;
+        }
 
-        return row + 1 == correctRow && col + 1 == correctCol;
+        return (int) tile - 1 == coordinate;
     }
 
-    private int manhattanDistanceFor(int tile, int row, int col) {
-        if (tile == 0) return 0;
+    private int manhattanDistanceFor(char tile, int row, int col) {
+        if ((int) tile == 0) return 0;
 
         int manhattanDistance = 0;
         int correctRow = correctRowFor(tile);
@@ -163,84 +216,68 @@ public class Board {
         int manhattanRow = correctRow - (row + 1);
         int manhattanCol = correctCol - (col + 1);
 
-        if (manhattanRow != 0) {
-            manhattanDistance += Math.abs(manhattanRow);
-        }
-
-        if (manhattanCol != 0) {
-            manhattanDistance += Math.abs(manhattanCol);
-        }
+        manhattanDistance += Math.abs(manhattanRow);
+        manhattanDistance += Math.abs(manhattanCol);
 
         return manhattanDistance;
     }
 
     private void findEmptySpaceCoordinates() {
-        if (emptySpaceRow != -1 && emptySpaceCol != -1) {
+        if (emptySpaceCoordinate != -1) {
             return;
         }
 
-        int dimension = dimension();
-        for (int row = 0; row < dimension; row++) {
-            for (int col = 0; col < dimension; col++) {
-                int tile = tiles[row][col];
-                if (tile == 0) {
-                    emptySpaceRow = row + 1;
-                    emptySpaceCol = col + 1;
-                }
+        int dimension = dimension() * dimension();
+        for (int i = 0; i < dimension; i++) {
+            int tile = tiles[i];
+            if (tile == 0) {
+                emptySpaceCoordinate = i;
             }
         }
     }
 
-    private int[][] createTilesFor(Neighbor neighbor) {
-        int neighborEmptySpaceRow = 0;
-        int neighborEmptySpaceCol = 0;
+
+    private char[] createTilesFor(Neighbor neighbor) {
+        int neighborEmptySpaceCoordinate = 0;
 
         switch (neighbor) {
             case LEFT:
-                neighborEmptySpaceRow = emptySpaceRow;
-                neighborEmptySpaceCol = emptySpaceCol - 1;
+                if (emptySpaceCoordinate % dimension() == 0) {
+                    return null;
+                }
+                neighborEmptySpaceCoordinate = emptySpaceCoordinate - 1;
                 break;
 
             case TOP:
-                neighborEmptySpaceRow = emptySpaceRow - 1;
-                neighborEmptySpaceCol = emptySpaceCol;
+                if (emptySpaceCoordinate < dimension()) {
+                    return null;
+                }
+                neighborEmptySpaceCoordinate = emptySpaceCoordinate - dimension();
                 break;
 
             case RIGHT:
-                neighborEmptySpaceRow = emptySpaceRow;
-                neighborEmptySpaceCol = emptySpaceCol + 1;
+                if (emptySpaceCoordinate % dimension() == dimension() - 1) {
+                    return null;
+                }
+                neighborEmptySpaceCoordinate = emptySpaceCoordinate + 1;
                 break;
 
             case BOTTOM:
-                neighborEmptySpaceRow = emptySpaceRow + 1;
-                neighborEmptySpaceCol = emptySpaceCol;
+                if (emptySpaceCoordinate >= dimension() * dimension() - dimension()) {
+                    return null;
+                }
+                neighborEmptySpaceCoordinate = emptySpaceCoordinate + dimension();
                 break;
         }
 
-        boolean isCoordinatesValid =
-                isCoordinateValid(neighborEmptySpaceRow) && isCoordinateValid(
-                        neighborEmptySpaceCol);
-        if (!isCoordinatesValid) {
-            return null;
-        }
-
-        return createNeighborWithEmptySpaceAt(neighborEmptySpaceRow, neighborEmptySpaceCol);
+        return createNeighborWithEmptySpaceAt(neighborEmptySpaceCoordinate);
     }
 
-    private boolean isCoordinateValid(int coordinace) {
-        return coordinace > 0 && coordinace <= dimension();
-    }
-
-    private int[][] createNeighborWithEmptySpaceAt(int row, int col) {
-        int n = tiles.length;
-        int[][] neighborTiles = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            neighborTiles[i] = Arrays.copyOf(tiles[i], tiles.length);
-        }
-
-        int backUpTile = neighborTiles[row - 1][col - 1];
-        neighborTiles[emptySpaceRow - 1][emptySpaceCol - 1] = backUpTile;
-        neighborTiles[row - 1][col - 1] = 0;
+    private char[] createNeighborWithEmptySpaceAt(int neighborEmptySpaceCoordinate) {
+        char[] neighborTiles = Arrays.copyOf(tiles, tiles.length);
+        char backUpTile = neighborTiles[neighborEmptySpaceCoordinate];
+        neighborTiles[emptySpaceCoordinate] = backUpTile;
+        neighborTiles[neighborEmptySpaceCoordinate] = (char) 0;
 
         return neighborTiles;
     }
