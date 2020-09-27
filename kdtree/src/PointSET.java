@@ -33,7 +33,7 @@ public class PointSET {
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
         validatePoint(p);
-        points.add(p);
+        if (!contains(p)) points.add(p);
     }
 
     // does the set contain point p?
@@ -65,11 +65,11 @@ public class PointSET {
     public Point2D nearest(Point2D p) {
         validatePoint(p);
         Point2D nearest = null;
-        double distance = 0.0;
+        double distance = Double.MAX_VALUE;
 
         for (Point2D point : points) {
-            double newDistance = p.distanceTo(point);
-            if (distance == 0.0 || newDistance < distance) {
+            double newDistance = Math.abs(p.distanceTo(point));
+            if (Double.compare(newDistance, distance) == -1) {
                 distance = newDistance;
                 nearest = point;
             }
@@ -80,20 +80,40 @@ public class PointSET {
 
     // unit testing of the methods (optional)
     public static void main(String[] args) {
-        Point2D firstP = new Point2D(0, 0);
-        Point2D secondP = new Point2D(1, 1);
-        Point2D thirdP = new Point2D(2, 2);
-        Point2D fourthP = new Point2D(3, 1);
+        Point2D p1 = new Point2D(0.25, 0);
+        Point2D p2 = new Point2D(0, 0.5);
+        Point2D p3 = new Point2D(1.0, 1.0);
+        Point2D p4 = new Point2D(0, 0.5);
+        Point2D p6 = new Point2D(0.75, 0.25);
+        Point2D p7 = new Point2D(0.25, 0.5);
+        Point2D p8 = new Point2D(1.0, 0.0);
+        Point2D p9 = new Point2D(1.0, 0.75);
+        /*
+         A  0.25 0.0
+      B  0.0 0.5
+      C  1.0 1.0
+      D  0.0 0.5
+      E  0.0 0.5
+      F  1.0 1.0
+      G  0.75 0.25
+      H  0.25 0.5
+      I  1.0 0.0
+      J  1.0 0.75
+         */
 
         PointSET pointSET = new PointSET();
-        pointSET.insert(firstP);
-        pointSET.insert(secondP);
-        pointSET.insert(thirdP);
-        pointSET.insert(fourthP);
+        pointSET.insert(p1);
+        pointSET.insert(p2);
+        pointSET.insert(p3);
+        pointSET.insert(p4);
+        pointSET.insert(p6);
+        pointSET.insert(p7);
+        pointSET.insert(p8);
+        pointSET.insert(p9);
 
         System.out.printf("size: %d", pointSET.size());
         System.out.println();
-        System.out.printf("nearest: %s", pointSET.nearest(fourthP).toString());
+        System.out.printf("nearest: %s", pointSET.nearest(p1).toString());
         System.out.println();
     }
 

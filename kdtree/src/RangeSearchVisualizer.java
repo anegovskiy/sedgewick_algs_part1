@@ -38,6 +38,8 @@ public class RangeSearchVisualizer {
         double x1 = 0.0, y1 = 0.0;      // current location of mouse
         boolean isDragging = false;     // is the user dragging a rectangle
 
+        StdDraw.enableDoubleBuffering();
+
         // draw the points
         StdDraw.clear();
         StdDraw.setPenColor(StdDraw.BLACK);
@@ -46,7 +48,7 @@ public class RangeSearchVisualizer {
         StdDraw.show();
 
         // process range search queries
-        StdDraw.enableDoubleBuffering();
+
         while (true) {
 
             // user starts to drag a rectangle
